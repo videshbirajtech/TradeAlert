@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { PriceService } from './price.service';
+import { Component, OnInit } from '@angular/core';
+import { PriceService, Coin } from './price.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
@@ -10,21 +10,46 @@ import { CommonModule } from '@angular/common';
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
-export class AppComponent {
-  coins = ['BTC', 'ETH', 'BNB', 'SOL', 'XRP'];
-  selectedCoin = 'BTC';
+export class AppComponent implements OnInit {
+
+  coins: Coin[] = [];
+  selectedSymbol = '';
   priceData: { symbol: string; price: string } | null = null;
   errorMessage = '';
   loading = false;
+  coinsLoading = false;
 
   constructor(private priceService: PriceService) {}
 
-  getPrice() {
+  ngOnInit(): void {
+    this.loadCoins();
+  }
+
+  loadCoins(): void {
+    this.coinsLoading = true;
+    this.priceService.getCoins().subscribe({
+      next: (data) => {
+        this.coins = data;
+        if (data.length > 0) {
+          this.selectedSymbol = data[0].symbol;
+        }
+        this.coinsLoading = false;
+      },
+      error: () => {
+        this.errorMessage = 'Failed to load coins from server.';
+        this.coinsLoading = false;
+      }
+    });
+  }
+
+  getPrice(): void {
+    if (!this.selectedSymbol) return;
+
     this.loading = true;
     this.priceData = null;
     this.errorMessage = '';
 
-    this.priceService.getPrice(this.selectedCoin).subscribe({
+    this.priceService.getPrice(this.selectedSymbol).subscribe({
       next: (data) => {
         this.priceData = data;
         this.loading = false;

@@ -20,7 +20,7 @@ public class TestController {
     }
 
     @GetMapping("/price")
-    public Map<String, String> getPrice(@RequestParam CoinEnum symbol) {
+    public Map<String, String> getPrice(@RequestParam String symbol) {
         return priceService.getPrice(symbol);
     }
 }

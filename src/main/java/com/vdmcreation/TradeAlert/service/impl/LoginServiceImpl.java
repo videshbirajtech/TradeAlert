@@ -1,0 +1,87 @@
+package com.vdmcreation.TradeAlert.service.impl;
+
+import com.vdmcreation.TradeAlert.dto.ApiResponseDTO;
+import com.vdmcreation.TradeAlert.dto.LoginRequestDTO;
+import com.vdmcreation.TradeAlert.dto.VerifyOtpRequestDTO;
+import com.vdmcreation.TradeAlert.entity.User;
+import com.vdmcreation.TradeAlert.entity.UserOtp;
+import com.vdmcreation.TradeAlert.repository.UserOtpRepository;
+import com.vdmcreation.TradeAlert.repository.UserRepository;
+import com.vdmcreation.TradeAlert.service.EmailService;
+import com.vdmcreation.TradeAlert.service.LoginService;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.time.LocalDateTime;
+import java.util.Random;
+
+@Service
+public class LoginServiceImpl implements LoginService {
+
+    private final UserRepository userRepository;
+    private final UserOtpRepository userOtpRepository;
+    private final EmailService emailService;
+
+    public LoginServiceImpl(UserRepository userRepository,
+                            UserOtpRepository userOtpRepository,
+                            EmailService emailService) {
+        this.userRepository = userRepository;
+        this.userOtpRepository = userOtpRepository;
+        this.emailService = emailService;
+    }
+
+    @Override
+    public ApiResponseDTO login(LoginRequestDTO request) {
+        // Check if user exists
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "No account found with email: " + request.getEmail()));
+
+        // Generate 6-digit OTP
+        int otp = 100000 + new Random().nextInt(900000);
+
+        // Save OTP to database
+        UserOtp userOtp = new UserOtp(user, otp);
+        userOtpRepository.save(userOtp);
+
+        // Send OTP via email
+        emailService.sendOtpEmail(user.getEmail(), otp);
+
+        return new ApiResponseDTO(true, "OTP sent successfully to " + user.getEmail());
+    }
+
+    @Override
+    public ApiResponseDTO verifyOtp(VerifyOtpRequestDTO request) {
+        // Check if user exists
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "No account found with email: " + request.getEmail()));
+
+        // Fetch latest OTP record
+        UserOtp latestOtp = userOtpRepository.findTopByUserOrderByCreatedAtDesc(user)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST, "No OTP found for this user. Please request a new OTP."));
+
+        // Check if OTP is already used
+        if (latestOtp.isUsed()) {
+            return new ApiResponseDTO(false, "OTP has already been used. Please request a new OTP.");
+        }
+
+        // Check if OTP is expired (5 minutes)
+        if (latestOtp.getCreatedAt().isBefore(LocalDateTime.now().minusMinutes(5))) {
+            return new ApiResponseDTO(false, "OTP has expired. Please request a new OTP.");
+        }
+
+        // Verify OTP
+        if (!latestOtp.getOtp().equals(request.getOtp())) {
+            return new ApiResponseDTO(false, "Invalid OTP. Please try again.");
+        }
+
+        // Mark OTP as used
+        latestOtp.setUsed(true);
+        userOtpRepository.save(latestOtp);
+
+        return new ApiResponseDTO(true, "OTP verified successfully. Welcome, " + user.getFirstName() + "!");
+    }
+}

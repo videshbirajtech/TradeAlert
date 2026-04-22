@@ -5,5 +5,5 @@ import com.vdmcreation.TradeAlert.enums.CoinEnum;
 import java.util.Map;
 
 public interface PriceService {
-    Map<String, String> getPrice(CoinEnum symbol);
+    Map<String, String> getPrice(String symbol);
 }
