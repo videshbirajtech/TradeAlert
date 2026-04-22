@@ -1,2 +1,4 @@
-package com.vdmcreation.TradeAlert.controller;public class TestController {
+package com.vdmcreation.TradeAlert.controller;
+
+public class TestController {
 }
