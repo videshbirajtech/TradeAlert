@@ -1,0 +1,31 @@
+<div class="container">
+  <div class="card">
+    <div class="header">
+      <h1>📈 Trade Alert</h1>
+      <p>Get real-time crypto prices</p>
+    </div>
+
+    <div class="form-section">
+      <label for="coinSelect">Select Coin</label>
+      <select id="coinSelect" [(ngModel)]="selectedCoin">
+        <option *ngFor="let coin of coins" [value]="coin">{{ coin }}/USDT</option>
+      </select>
+
+      <button (click)="getPrice()" [disabled]="loading">
+        <span *ngIf="!loading">Get Price</span>
+        <span *ngIf="loading">Fetching...</span>
+      </button>
+    </div>
+
+    <div class="result" *ngIf="priceData">
+      <div class="price-card">
+        <span class="coin-label">{{ priceData.symbol }}</span>
+        <span class="price-value">${{ priceData.price | number:'1.2-2' }}</span>
+      </div>
+    </div>
+
+    <div class="error" *ngIf="errorMessage">
+      <span>⚠️ {{ errorMessage }}</span>
+    </div>
+  </div>
+</div>

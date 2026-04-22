@@ -21,7 +21,6 @@ public class TestController {
 
     @GetMapping("/price")
     public Map<String, String> getPrice(@RequestParam CoinEnum symbol) {
-        // Convert to uppercase and append USDT if not present
         return priceService.getPrice(symbol);
     }
 }

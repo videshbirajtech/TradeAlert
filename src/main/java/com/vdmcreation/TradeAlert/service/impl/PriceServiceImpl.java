@@ -20,6 +20,6 @@ public class PriceServiceImpl implements PriceService {
 
     @Override
     public Map<String, String> getPrice(CoinEnum symbol) {
-        return restTemplate.getForObject(BINANCE_URL, Map.class, symbol);
+        return restTemplate.getForObject(BINANCE_URL, Map.class, symbol.getDisplayName());
     }
 }
