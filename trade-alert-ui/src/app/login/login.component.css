@@ -4,11 +4,6 @@
   padding: 0;
 }
 
-body {
-  font-family: 'Segoe UI', sans-serif;
-  background: #0f0f1a;
-}
-
 .container {
   min-height: 100vh;
   display: flex;
@@ -23,7 +18,7 @@ body {
   border-radius: 16px;
   padding: 40px;
   width: 100%;
-  max-width: 460px;
+  max-width: 420px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   border: 1px solid #0f3460;
 }
@@ -45,10 +40,14 @@ body {
   font-size: 0.95rem;
 }
 
+.header strong {
+  color: #4f8ef7;
+}
+
 .form-section {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
 label {
@@ -59,20 +58,30 @@ label {
   letter-spacing: 0.05em;
 }
 
-select {
+input {
   background: #0f3460;
   color: #e2e8f0;
   border: 1px solid #1e4d8c;
   border-radius: 8px;
   padding: 12px 16px;
   font-size: 1rem;
-  cursor: pointer;
   outline: none;
   transition: border-color 0.2s;
+  width: 100%;
 }
 
-select:focus {
+input:focus {
   border-color: #4f8ef7;
+}
+
+input::placeholder {
+  color: #4a5568;
+}
+
+/* Remove number input arrows */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
 }
 
 button {
@@ -80,7 +89,7 @@ button {
   color: white;
   border: none;
   border-radius: 8px;
-  padding: 14px;
+  padding: 13px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
@@ -93,38 +102,32 @@ button:hover:not(:disabled) {
 }
 
 button:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
-.result {
-  margin-top: 28px;
-}
-
-.price-card {
-  background: linear-gradient(135deg, #0f3460, #1a1a2e);
-  border: 1px solid #4f8ef7;
-  border-radius: 12px;
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  animation: fadeIn 0.3s ease;
-}
-
-.coin-label {
+.btn-secondary {
+  background: transparent;
+  border: 1px solid #1e4d8c;
   color: #94a3b8;
-  font-size: 0.9rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+  font-weight: 400;
 }
 
-.price-value {
+.btn-secondary:hover:not(:disabled) {
+  background: #0f3460;
+  transform: none;
+}
+
+.success {
+  margin-top: 20px;
+  background: rgba(74, 222, 128, 0.1);
+  border: 1px solid rgba(74, 222, 128, 0.3);
+  border-radius: 8px;
+  padding: 12px 16px;
   color: #4ade80;
-  font-size: 2.2rem;
-  font-weight: 700;
+  font-size: 0.9rem;
+  text-align: center;
+  animation: fadeIn 0.3s ease;
 }
 
 .error {
@@ -132,7 +135,7 @@ button:disabled {
   background: rgba(239, 68, 68, 0.1);
   border: 1px solid rgba(239, 68, 68, 0.3);
   border-radius: 8px;
-  padding: 14px 16px;
+  padding: 12px 16px;
   color: #f87171;
   font-size: 0.9rem;
   text-align: center;
@@ -140,6 +143,18 @@ button:disabled {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+.switch-link {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.switch-link a {
+  color: #4f8ef7;
+  cursor: pointer;
+  text-decoration: underline;
 }

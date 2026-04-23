@@ -1,0 +1,74 @@
+<div class="container">
+  <div class="card">
+
+    <div class="header">
+      <h1>📈 Trade Alert</h1>
+      <p *ngIf="step === 'form'">Create your account</p>
+      <p *ngIf="step === 'otp'">Verify your email <strong>{{ email }}</strong></p>
+    </div>
+
+    <!-- Step 1: Signup Form -->
+    <div class="form-section" *ngIf="step === 'form'">
+      <div class="row">
+        <div class="field">
+          <label for="firstName">First Name</label>
+          <input id="firstName" type="text" [(ngModel)]="firstName" placeholder="John" />
+        </div>
+        <div class="field">
+          <label for="lastName">Last Name</label>
+          <input id="lastName" type="text" [(ngModel)]="lastName" placeholder="Doe" />
+        </div>
+      </div>
+
+      <label for="email">Email Address</label>
+      <input
+        id="email"
+        type="email"
+        [(ngModel)]="email"
+        placeholder="you@example.com"
+        (keyup.enter)="signup()"
+      />
+
+      <button (click)="signup()" [disabled]="loading || !firstName || !lastName || !email">
+        <span *ngIf="!loading">Sign Up</span>
+        <span *ngIf="loading">Sending OTP...</span>
+      </button>
+
+      <p class="switch-link">Already have an account?
+        <a (click)="goToLogin()">Login</a>
+      </p>
+    </div>
+
+    <!-- Step 2: OTP Verification -->
+    <div class="form-section" *ngIf="step === 'otp'">
+      <label for="otp">One-Time Password</label>
+      <input
+        id="otp"
+        type="number"
+        [(ngModel)]="otp"
+        placeholder="Enter 6-digit OTP"
+        (keyup.enter)="verifyOtp()"
+      />
+
+      <button (click)="verifyOtp()" [disabled]="loading || !otp">
+        <span *ngIf="!loading">Verify & Continue</span>
+        <span *ngIf="loading">Verifying...</span>
+      </button>
+
+      <button class="btn-secondary" (click)="goBack()" [disabled]="loading">
+        ← Go Back
+      </button>
+    </div>
+
+    <!-- Success -->
+    <div class="success" *ngIf="successMessage && step === 'otp'">
+      ✅ {{ successMessage }}
+    </div>
+
+    <!-- Error -->
+    <div class="error" *ngIf="errorMessage">
+      ⚠️ {{ errorMessage }}
+    </div>
+
+  </div>
+</div>

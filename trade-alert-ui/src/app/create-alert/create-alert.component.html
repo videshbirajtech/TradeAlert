@@ -1,0 +1,37 @@
+<div class="page">
+
+  <div class="page-header">
+    <h2>Create Alert</h2>
+    <p>Set up price alerts for your favourite coins</p>
+  </div>
+
+  <div class="card">
+
+    <div class="loading" *ngIf="coinsLoading">Loading coins...</div>
+
+    <div class="form-section" *ngIf="!coinsLoading">
+      <label for="coinSelect">Select Coin</label>
+      <select id="coinSelect" [(ngModel)]="selectedCoinId">
+        <option *ngFor="let coin of coins" [value]="coin.id">
+          {{ coin.coinName }}
+        </option>
+      </select>
+
+      <label for="alertPrice">Alert Price (USD)</label>
+      <input
+        id="alertPrice"
+        type="number"
+        [(ngModel)]="alertPrice"
+        placeholder="Enter target price"
+        step="0.01"
+      />
+
+      <button (click)="saveAlert()" [disabled]="loading || !selectedCoinId || !alertPrice">
+        <span *ngIf="!loading">Save Alert</span>
+        <span *ngIf="loading">Saving...</span>
+      </button>
+    </div>
+
+  </div>
+
+</div>

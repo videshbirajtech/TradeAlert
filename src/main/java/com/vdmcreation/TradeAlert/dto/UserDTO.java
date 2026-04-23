@@ -8,17 +8,10 @@ public class UserDTO {
     private String firstName;
     private String lastName;
     private String email;
+    private String profilePhoto;
     private LocalDateTime createdDate;
 
     public UserDTO() {}
-
-    public UserDTO(Long id, String firstName, String lastName, String email, LocalDateTime createdDate) {
-        this.id = id;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-        this.createdDate = createdDate;
-    }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -31,6 +24,9 @@ public class UserDTO {
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
+
+    public String getProfilePhoto() { return profilePhoto; }
+    public void setProfilePhoto(String profilePhoto) { this.profilePhoto = profilePhoto; }
 
     public LocalDateTime getCreatedDate() { return createdDate; }
     public void setCreatedDate(LocalDateTime createdDate) { this.createdDate = createdDate; }

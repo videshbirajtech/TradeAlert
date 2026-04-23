@@ -23,6 +23,12 @@ public class User {
     @Column(name = "created_date", updatable = false)
     private LocalDateTime createdDate;
 
+    @Column(name = "is_verified")
+    private boolean verified = false;
+
+    @Column(name = "profile_photo")
+    private String profilePhoto;
+
     @PrePersist
     protected void onCreate() {
         this.createdDate = LocalDateTime.now();
@@ -50,4 +56,10 @@ public class User {
 
     public LocalDateTime getCreatedDate() { return createdDate; }
     public void setCreatedDate(LocalDateTime createdDate) { this.createdDate = createdDate; }
+
+    public boolean isVerified() { return verified; }
+    public void setVerified(boolean verified) { this.verified = verified; }
+
+    public String getProfilePhoto() { return profilePhoto; }
+    public void setProfilePhoto(String profilePhoto) { this.profilePhoto = profilePhoto; }
 }

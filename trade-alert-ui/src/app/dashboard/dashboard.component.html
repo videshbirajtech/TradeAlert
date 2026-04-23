@@ -1,0 +1,107 @@
+<div class="page">
+
+  <!-- Price Checker -->
+  <div class="page-header">
+    <h2>Dashboard</h2>
+    <p>Live crypto prices from Binance</p>
+  </div>
+
+  <div class="card">
+    <div class="loading" *ngIf="coinsLoading">Loading coins...</div>
+    <div class="form-section" *ngIf="!coinsLoading">
+      <label for="coinSelect">Select Coin</label>
+      <select id="coinSelect" [(ngModel)]="selectedSymbol">
+        <option *ngFor="let coin of coins" [value]="coin.symbol">{{ coin.coinName }}</option>
+      </select>
+      <button (click)="getPrice()" [disabled]="priceLoading || coins.length === 0">
+        <span *ngIf="!priceLoading">Get Price</span>
+        <span *ngIf="priceLoading">Fetching...</span>
+      </button>
+    </div>
+    <div class="result" *ngIf="priceData">
+      <div class="price-card">
+        <span class="coin-label">{{ priceData.symbol }}</span>
+        <span class="price-value">${{ priceData.price | number:'1.2-2' }}</span>
+      </div>
+    </div>
+    <div class="error" *ngIf="priceError">⚠️ {{ priceError }}</div>
+  </div>
+
+  <!-- Alerts Table -->
+  <div class="section-header">
+    <h3>My Price Alerts</h3>
+  </div>
+
+  <div class="card table-card">
+    <div class="loading" *ngIf="alertsLoading">Loading alerts...</div>
+
+    <div class="empty" *ngIf="!alertsLoading && alerts.length === 0">
+      No alerts yet. Go to <a routerLink="/create-alert"><strong>Create Alert</strong></a> to add one.
+    </div>
+
+    <table *ngIf="!alertsLoading && alerts.length > 0">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Coin</th>
+          <th>Symbol</th>
+          <th>Alert Price</th>
+          <th>Created</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let alert of alerts; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td>{{ alert.coinName }}</td>
+          <td><span class="badge">{{ alert.symbol }}</span></td>
+          <td class="price">${{ alert.alertPrice | number:'1.2-2' }}</td>
+          <td class="date">{{ alert.createdAt | date:'dd MMM yyyy' }}</td>
+          <td class="actions">
+            <div class="menu-wrapper">
+              <button class="dots-btn" (click)="toggleMenu(alert.id, $event)">⋮</button>
+              <div class="dropdown"
+                   *ngIf="openMenuId === alert.id"
+                   [style.top.px]="menuPosition.top"
+                   [style.left.px]="menuPosition.left">
+                <button (click)="openEdit(alert, $event)">✏️ Edit</button>
+                <button class="danger" (click)="deleteAlert(alert.id, $event)">🗑️ Delete</button>
+              </div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-overlay" *ngIf="editModalOpen" (click)="closeEdit()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Edit Alert</h3>
+      <button class="close-btn" (click)="closeEdit()">✕</button>
+    </div>
+
+    <div class="form-section">
+      <label>Coin</label>
+      <select [(ngModel)]="editCoinId">
+        <option *ngFor="let coin of coins" [value]="coin.id">{{ coin.coinName }}</option>
+      </select>
+
+      <label>Alert Price (USD)</label>
+      <input type="number" [(ngModel)]="editPrice" placeholder="Enter price" step="0.01" />
+    </div>
+
+    <div class="error" *ngIf="editError">⚠️ {{ editError }}</div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeEdit()">Cancel</button>
+      <button (click)="saveEdit()" [disabled]="editLoading || !editCoinId || !editPrice">
+        <span *ngIf="!editLoading">Save</span>
+        <span *ngIf="editLoading">Saving...</span>
+      </button>
+    </div>
+  </div>
+</div>

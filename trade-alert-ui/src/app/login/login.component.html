@@ -1,0 +1,61 @@
+<div class="container">
+  <div class="card">
+
+    <div class="header">
+      <h1>📈 Trade Alert</h1>
+      <p *ngIf="step === 'email'">Enter your email to receive an OTP</p>
+      <p *ngIf="step === 'otp'">Enter the OTP sent to <strong>{{ email }}</strong></p>
+    </div>
+
+    <!-- Step 1: Email -->
+    <div class="form-section" *ngIf="step === 'email'">
+      <label for="email">Email Address</label>
+      <input
+        id="email"
+        type="email"
+        [(ngModel)]="email"
+        placeholder="you@example.com"
+        (keyup.enter)="sendOtp()"
+      />
+      <button (click)="sendOtp()" [disabled]="loading || !email">
+        <span *ngIf="!loading">Send OTP</span>
+        <span *ngIf="loading">Sending...</span>
+      </button>
+
+      <p class="switch-link">Don't have an account?
+        <a (click)="goToSignup()">Sign Up</a>
+      </p>
+    </div>
+
+    <!-- Step 2: OTP -->
+    <div class="form-section" *ngIf="step === 'otp'">
+      <label for="otp">One-Time Password</label>
+      <input
+        id="otp"
+        type="number"
+        [(ngModel)]="otp"
+        placeholder="Enter 6-digit OTP"
+        maxlength="6"
+        (keyup.enter)="verifyOtp()"
+      />
+      <button (click)="verifyOtp()" [disabled]="loading || !otp">
+        <span *ngIf="!loading">Verify OTP</span>
+        <span *ngIf="loading">Verifying...</span>
+      </button>
+      <button class="btn-secondary" (click)="goBack()" [disabled]="loading">
+        ← Change Email
+      </button>
+    </div>
+
+    <!-- Success -->
+    <div class="success" *ngIf="successMessage && step === 'otp'">
+      ✅ {{ successMessage }}
+    </div>
+
+    <!-- Error -->
+    <div class="error" *ngIf="errorMessage">
+      ⚠️ {{ errorMessage }}
+    </div>
+
+  </div>
+</div>

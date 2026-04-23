@@ -2,7 +2,9 @@ package com.vdmcreation.TradeAlert.controller;
 
 import com.vdmcreation.TradeAlert.dto.ApiResponseDTO;
 import com.vdmcreation.TradeAlert.dto.LoginRequestDTO;
+import com.vdmcreation.TradeAlert.dto.SignupRequestDTO;
 import com.vdmcreation.TradeAlert.dto.VerifyOtpRequestDTO;
+import com.vdmcreation.TradeAlert.dto.VerifySignupOtpRequestDTO;
 import com.vdmcreation.TradeAlert.service.LoginService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,5 +29,17 @@ public class LoginController {
     @PostMapping("/verify-otp")
     public ResponseEntity<ApiResponseDTO> verifyOtp(@RequestBody VerifyOtpRequestDTO request) {
         return ResponseEntity.ok(loginService.verifyOtp(request));
+    }
+
+    // POST /api/auth/signup
+    @PostMapping("/signup")
+    public ResponseEntity<ApiResponseDTO> signup(@RequestBody SignupRequestDTO request) {
+        return ResponseEntity.ok(loginService.signup(request));
+    }
+
+    // POST /api/auth/verify-signup-otp
+    @PostMapping("/verify-signup-otp")
+    public ResponseEntity<ApiResponseDTO> verifySignupOtp(@RequestBody VerifySignupOtpRequestDTO request) {
+        return ResponseEntity.ok(loginService.verifySignupOtp(request));
     }
 }

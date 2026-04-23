@@ -15,6 +15,7 @@ public class EmailService {
 
     public void sendOtpEmail(String toEmail, int otp) {
         SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom("videsh@birajtech.com");
         message.setTo(toEmail);
         message.setSubject("Trade Alert - Your OTP Code");
         message.setText(
