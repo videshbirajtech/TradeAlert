@@ -1,7 +1,10 @@
 package com.vdmcreation.TradeAlert.controller;
 
+import com.vdmcreation.TradeAlert.dto.ApiResponseDTO;
 import com.vdmcreation.TradeAlert.dto.UserDTO;
+import com.vdmcreation.TradeAlert.dto.UserProfileDTO;
 import com.vdmcreation.TradeAlert.dto.UserRequestDTO;
+import com.vdmcreation.TradeAlert.service.UserRoleService;
 import com.vdmcreation.TradeAlert.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -16,9 +19,11 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final UserRoleService userRoleService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, UserRoleService userRoleService) {
         this.userService = userService;
+        this.userRoleService = userRoleService;
     }
 
     // GET /api/users
@@ -35,8 +40,9 @@ public class UserController {
 
     // GET /api/users/profile?email=user@example.com
     @GetMapping("/profile")
-    public ResponseEntity<UserDTO> getUserByEmail(@RequestParam String email) {
-        return ResponseEntity.ok(userService.getUserByEmail(email));
+    public ResponseEntity<ApiResponseDTO<UserProfileDTO>> getUserByEmail(@RequestParam String email) {
+        UserProfileDTO profile = userRoleService.getUserProfile(email);
+        return ResponseEntity.ok(new ApiResponseDTO<>("Profile retrieved successfully", profile, true));
     }
 
     // POST /api/users

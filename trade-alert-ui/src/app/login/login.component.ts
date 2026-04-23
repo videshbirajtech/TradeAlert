@@ -56,11 +56,26 @@ export class LoginComponent {
 
     this.authService.verifyOtp(this.email, this.otp).subscribe({
       next: (res) => {
-        this.loading = false;
         if (res.success) {
           this.authService.setLoggedIn(this.email);
-          this.router.navigate(['/dashboard']);
+          
+          // Load user profile and redirect based on role
+          this.authService.loadUserProfileAndRedirect().subscribe({
+            next: (redirectRoute) => {
+              this.loading = false;
+              console.log('User profile loaded, redirecting to:', redirectRoute);
+              console.log('Current user profile:', this.authService.getCurrentUserProfile());
+              this.router.navigate([redirectRoute]);
+            },
+            error: (err) => {
+              this.loading = false;
+              console.error('Error loading profile:', err);
+              // Fallback to dashboard if profile loading fails
+              this.router.navigate(['/dashboard']);
+            }
+          });
         } else {
+          this.loading = false;
           this.errorMessage = res.message;
         }
       },

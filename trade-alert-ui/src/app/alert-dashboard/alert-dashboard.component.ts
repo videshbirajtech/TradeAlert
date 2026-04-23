@@ -91,8 +91,8 @@ export class AlertDashboardComponent implements OnInit {
   }
 
   canCreateAlert(): boolean {
-    return this.dashboard?.alertStats?.subscriptionActive && 
-           this.dashboard?.alertStats?.remainingAlertCount > 0;
+    return this.dashboard?.alertStats?.subscriptionActive === true && 
+           (this.dashboard?.alertStats?.remainingAlertCount || 0) > 0;
   }
 
   getPlanDisplayName(planType: string): string {

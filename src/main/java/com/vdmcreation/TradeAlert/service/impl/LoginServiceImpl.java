@@ -11,6 +11,7 @@ import com.vdmcreation.TradeAlert.repository.UserOtpRepository;
 import com.vdmcreation.TradeAlert.repository.UserRepository;
 import com.vdmcreation.TradeAlert.service.EmailService;
 import com.vdmcreation.TradeAlert.service.LoginService;
+import com.vdmcreation.TradeAlert.service.UserRoleService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -24,13 +25,16 @@ public class LoginServiceImpl implements LoginService {
     private final UserRepository userRepository;
     private final UserOtpRepository userOtpRepository;
     private final EmailService emailService;
+    private final UserRoleService userRoleService;
 
     public LoginServiceImpl(UserRepository userRepository,
                             UserOtpRepository userOtpRepository,
-                            EmailService emailService) {
+                            EmailService emailService,
+                            UserRoleService userRoleService) {
         this.userRepository = userRepository;
         this.userOtpRepository = userOtpRepository;
         this.emailService = emailService;
+        this.userRoleService = userRoleService;
     }
 
     @Override
@@ -143,6 +147,9 @@ public class LoginServiceImpl implements LoginService {
 
         user.setVerified(true);
         userRepository.save(user);
+
+        // Assign USER role on successful signup verification
+        userRoleService.assignUserRoleOnSignup(user.getEmail());
 
         return new ApiResponseDTO<>("Account verified! Welcome, " + user.getFirstName() + "!", null, true);
     }

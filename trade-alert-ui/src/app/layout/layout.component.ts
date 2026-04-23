@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { AuthService } from '../services/auth.service';
-import { UserService, UserProfile } from '../services/user.service';
+import { AuthService, UserProfile } from '../services/auth.service';
+import { UserService } from '../services/user.service';
 import { ToastComponent } from '../shared/toast/toast.component';
 import { environment } from '../../environments/environment';
 
@@ -18,11 +18,16 @@ export class LayoutComponent implements OnInit {
   userEmail = '';
   sidebarCollapsed = false;
   profile: UserProfile | null = null;
+  menuItems: any[] = [];
 
-  menuItems = [
+  private baseMenuItems = [
     { label: 'Dashboard',     icon: '📊', route: '/dashboard' },
     { label: 'Create Alert',  icon: '🔔', route: '/create-alert' },
     { label: 'Plans',         icon: '💎', route: '/plans' }
+  ];
+
+  private adminMenuItems = [
+    { label: 'Admin Panel',   icon: '⚙️', route: '/admin' }
   ];
 
   private serverBase = environment.apiBaseUrl.replace('/api', '');
@@ -36,11 +41,26 @@ export class LayoutComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    if (this.userEmail) {
-      this.userService.getProfile(this.userEmail).subscribe({
-        next: (data) => this.profile = data,
-        error: () => {}
+    // Subscribe to user profile changes
+    this.authService.userProfile$.subscribe(profile => {
+      this.profile = profile;
+      this.updateMenuItems();
+    });
+
+    // Load profile if not already loaded
+    if (this.userEmail && !this.profile) {
+      this.authService.getUserProfile(this.userEmail).subscribe({
+        error: (err) => console.error('Error loading profile:', err)
       });
+    }
+  }
+
+  private updateMenuItems(): void {
+    this.menuItems = [...this.baseMenuItems];
+    
+    // Add admin menu items for super users
+    if (this.authService.isSuperUser()) {
+      this.menuItems.push(...this.adminMenuItems);
     }
   }
 

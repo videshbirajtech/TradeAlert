@@ -22,9 +22,13 @@ public class DataInitializationService implements CommandLineRunner {
     @Autowired
     private UserAlertStatsService userAlertStatsService;
 
+    @Autowired
+    private UserRoleService userRoleService;
+
     @Override
     public void run(String... args) throws Exception {
         initializeUserAlertStats();
+        initializeUserRoles();
     }
 
     private void initializeUserAlertStats() {
@@ -42,6 +46,17 @@ public class DataInitializationService implements CommandLineRunner {
             System.out.println("User alert stats initialization completed.");
         } catch (Exception e) {
             System.err.println("Error during user alert stats initialization: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void initializeUserRoles() {
+        try {
+            System.out.println("Initializing default user roles...");
+            userRoleService.initializeDefaultRoles();
+            System.out.println("User roles initialization completed.");
+        } catch (Exception e) {
+            System.err.println("Error during user roles initialization: " + e.getMessage());
             e.printStackTrace();
         }
     }
