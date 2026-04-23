@@ -29,6 +29,9 @@ public class User {
     @Column(name = "profile_photo")
     private String profilePhoto;
 
+    @Column(name = "subscription_id")
+    private String subscriptionId;
+
     @PrePersist
     protected void onCreate() {
         this.createdDate = LocalDateTime.now();
@@ -62,4 +65,7 @@ public class User {
 
     public String getProfilePhoto() { return profilePhoto; }
     public void setProfilePhoto(String profilePhoto) { this.profilePhoto = profilePhoto; }
+
+    public String getSubscriptionId() { return subscriptionId; }
+    public void setSubscriptionId(String subscriptionId) { this.subscriptionId = subscriptionId; }
 }

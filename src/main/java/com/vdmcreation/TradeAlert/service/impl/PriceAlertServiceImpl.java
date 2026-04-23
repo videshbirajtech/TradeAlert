@@ -9,19 +9,26 @@ import com.vdmcreation.TradeAlert.repository.CoinRepository;
 import com.vdmcreation.TradeAlert.repository.PriceAlertRepository;
 import com.vdmcreation.TradeAlert.repository.UserRepository;
 import com.vdmcreation.TradeAlert.service.PriceAlertService;
+import com.vdmcreation.TradeAlert.service.UserAlertStatsService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class PriceAlertServiceImpl implements PriceAlertService {
 
     private final PriceAlertRepository alertRepository;
     private final UserRepository userRepository;
     private final CoinRepository coinRepository;
+    
+    @Autowired
+    private UserAlertStatsService userAlertStatsService;
 
     public PriceAlertServiceImpl(PriceAlertRepository alertRepository,
                                   UserRepository userRepository,
@@ -34,6 +41,13 @@ public class PriceAlertServiceImpl implements PriceAlertService {
     @Override
     public PriceAlertDTO createAlert(PriceAlertRequestDTO request) {
         User user = getUser(request.getUserEmail());
+        
+        // Check if user can create more alerts
+        if (!userAlertStatsService.canCreateAlert(user.getId())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+                "Alert limit reached. Please upgrade your subscription to create more alerts.");
+        }
+        
         Coin coin = getCoin(request.getCoinId());
 
         PriceAlert alert = new PriceAlert();
@@ -41,7 +55,12 @@ public class PriceAlertServiceImpl implements PriceAlertService {
         alert.setCoin(coin);
         alert.setAlertPrice(request.getAlertPrice());
 
-        return toDTO(alertRepository.save(alert));
+        PriceAlert savedAlert = alertRepository.save(alert);
+        
+        // Update alert count
+        userAlertStatsService.incrementAlertCount(user.getId());
+
+        return toDTO(savedAlert);
     }
 
     @Override
@@ -68,10 +87,15 @@ public class PriceAlertServiceImpl implements PriceAlertService {
 
     @Override
     public void deleteAlert(Long id) {
-        if (!alertRepository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Alert not found with id: " + id);
-        }
+        PriceAlert alert = alertRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Alert not found with id: " + id));
+        
+        Long userId = alert.getUser().getId();
         alertRepository.deleteById(id);
+        
+        // Update alert count
+        userAlertStatsService.decrementAlertCount(userId);
     }
 
     private User getUser(String email) {

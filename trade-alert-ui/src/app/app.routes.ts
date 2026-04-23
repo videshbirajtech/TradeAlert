@@ -5,6 +5,7 @@ import { LayoutComponent } from './layout/layout.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { CreateAlertComponent } from './create-alert/create-alert.component';
 import { ProfileComponent } from './profile/profile.component';
+import { PlansComponent } from './plans/plans.component';
 import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
@@ -18,7 +19,8 @@ export const routes: Routes = [
     children: [
       { path: 'dashboard', component: DashboardComponent },
       { path: 'create-alert', component: CreateAlertComponent },
-      { path: 'profile', component: ProfileComponent }
+      { path: 'profile', component: ProfileComponent },
+      { path: 'plans', component: PlansComponent }
     ]
   },
   { path: '**', redirectTo: 'login' }

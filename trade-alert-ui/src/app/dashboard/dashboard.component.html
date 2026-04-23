@@ -1,77 +1,159 @@
 <div class="page">
 
-  <!-- Price Checker -->
   <div class="page-header">
     <h2>Dashboard</h2>
     <p>Live crypto prices from Binance</p>
   </div>
 
-  <div class="card">
-    <div class="loading" *ngIf="coinsLoading">Loading coins...</div>
-    <div class="form-section" *ngIf="!coinsLoading">
-      <label for="coinSelect">Select Coin</label>
-      <select id="coinSelect" [(ngModel)]="selectedSymbol">
-        <option *ngFor="let coin of coins" [value]="coin.symbol">{{ coin.coinName }}</option>
-      </select>
-      <button (click)="getPrice()" [disabled]="priceLoading || coins.length === 0">
-        <span *ngIf="!priceLoading">Get Price</span>
-        <span *ngIf="priceLoading">Fetching...</span>
-      </button>
-    </div>
-    <div class="result" *ngIf="priceData">
-      <div class="price-card">
-        <span class="coin-label">{{ priceData.symbol }}</span>
-        <span class="price-value">${{ priceData.price | number:'1.2-2' }}</span>
+  <!-- Alert Statistics Section -->
+  <div class="alert-stats-section" *ngIf="alertStats">
+    <div class="stats-card">
+      <div class="stats-header">
+        <h3>Your Subscription Status</h3>
+        <span class="status-badge" [class.active]="alertStats?.subscriptionActive === true">
+          {{ alertStats?.subscriptionActive ? 'Active' : 'Inactive' }}
+        </span>
+      </div>
+      <div class="stats-content">
+        <div class="stat-item">
+          <label>Plan:</label>
+          <span class="plan-name">{{ getPlanDisplayName() }}</span>
+        </div>
+        <div class="stat-item">
+          <label>Alert Usage:</label>
+          <span class="usage">{{ getAlertUsageText() }}</span>
+        </div>
+        <div class="progress-container" *ngIf="alertStats?.subscriptionActive === true">
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="getUsagePercentage()"></div>
+          </div>
+          <small>{{ alertStats?.remainingAlertCount || 0 }} alerts remaining</small>
+        </div>
+        <div class="no-subscription" *ngIf="alertStats?.subscriptionActive !== true">
+          <p>You need an active subscription to create alerts.</p>
+          <a routerLink="/subscription" class="btn-primary">Get Subscription</a>
+        </div>
       </div>
     </div>
-    <div class="error" *ngIf="priceError">⚠️ {{ priceError }}</div>
   </div>
 
-  <!-- Alerts Table -->
-  <div class="section-header">
-    <h3>My Price Alerts</h3>
-  </div>
+  <div class="dashboard-layout">
 
-  <div class="card table-card">
-    <div class="loading" *ngIf="alertsLoading">Loading alerts...</div>
+    <!-- ── LEFT COLUMN ── -->
+    <div class="left-col">
 
-    <div class="empty" *ngIf="!alertsLoading && alerts.length === 0">
-      No alerts yet. Go to <a routerLink="/create-alert"><strong>Create Alert</strong></a> to add one.
+      <!-- Price Checker -->
+      <div class="card">
+        <div class="loading" *ngIf="coinsLoading">Loading coins...</div>
+        <div class="form-section" *ngIf="!coinsLoading">
+          <label for="coinSelect">Select Coin</label>
+          <select id="coinSelect" [(ngModel)]="selectedSymbol">
+            <option *ngFor="let coin of coins" [value]="coin.symbol">{{ coin.coinName }}</option>
+          </select>
+          <button (click)="getPrice()" [disabled]="priceLoading || coins.length === 0">
+            <span *ngIf="!priceLoading">Get Price</span>
+            <span *ngIf="priceLoading">Fetching...</span>
+          </button>
+        </div>
+        <div class="result" *ngIf="priceData">
+          <div class="price-card">
+            <span class="coin-label">{{ priceData.symbol }}</span>
+            <span class="price-value">${{ priceData.price | number:'1.2-2' }}</span>
+          </div>
+        </div>
+        <div class="error" *ngIf="priceError">⚠️ {{ priceError }}</div>
+      </div>
+
+      <!-- Alerts Table -->
+      <div class="section-header">
+        <h3>My Price Alerts</h3>
+        <div class="alert-count" *ngIf="alertStats">
+          {{ alerts.length }} of {{ alertStats?.maxAlertsAllowed || 0 }} alerts used
+        </div>
+      </div>
+
+      <div class="card table-card">
+        <div class="loading" *ngIf="alertsLoading">Loading alerts...</div>
+
+        <div class="empty" *ngIf="!alertsLoading && alerts.length === 0">
+          <div *ngIf="canCreateAlert()">
+            No alerts yet. Go to <a routerLink="/create-alert"><strong>Create Alert</strong></a> to add one.
+          </div>
+          <div *ngIf="!canCreateAlert() && alertStats?.subscriptionActive === true">
+            You have reached your alert limit. Please upgrade your subscription or delete some alerts.
+          </div>
+          <div *ngIf="alertStats?.subscriptionActive !== true">
+            You need an active subscription to create alerts. <a routerLink="/subscription">Get a subscription</a> to start creating alerts.
+          </div>
+        </div>
+
+        <table *ngIf="!alertsLoading && alerts.length > 0">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Coin</th>
+              <th>Symbol</th>
+              <th>Alert Price</th>
+              <th>Created</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let alert of alerts; let i = index">
+              <td>{{ i + 1 }}</td>
+              <td>{{ alert.coinName }}</td>
+              <td><span class="badge">{{ alert.symbol }}</span></td>
+              <td class="price">${{ alert.alertPrice | number:'1.2-2' }}</td>
+              <td class="date">{{ alert.createdAt | date:'dd MMM yyyy' }}</td>
+              <td class="actions">
+                <div class="menu-wrapper">
+                  <button class="dots-btn" (click)="toggleMenu(alert.id, $event)">⋮</button>
+                  <div class="dropdown"
+                       *ngIf="openMenuId === alert.id"
+                       [style.top.px]="menuPosition.top"
+                       [style.left.px]="menuPosition.left">
+                    <button (click)="openEdit(alert, $event)">✏️ Edit</button>
+                    <button class="danger" (click)="deleteAlert(alert.id, $event)">🗑️ Delete</button>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
     </div>
 
-    <table *ngIf="!alertsLoading && alerts.length > 0">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Coin</th>
-          <th>Symbol</th>
-          <th>Alert Price</th>
-          <th>Created</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let alert of alerts; let i = index">
-          <td>{{ i + 1 }}</td>
-          <td>{{ alert.coinName }}</td>
-          <td><span class="badge">{{ alert.symbol }}</span></td>
-          <td class="price">${{ alert.alertPrice | number:'1.2-2' }}</td>
-          <td class="date">{{ alert.createdAt | date:'dd MMM yyyy' }}</td>
-          <td class="actions">
-            <div class="menu-wrapper">
-              <button class="dots-btn" (click)="toggleMenu(alert.id, $event)">⋮</button>
-              <div class="dropdown"
-                   *ngIf="openMenuId === alert.id"
-                   [style.top.px]="menuPosition.top"
-                   [style.left.px]="menuPosition.left">
-                <button (click)="openEdit(alert, $event)">✏️ Edit</button>
-                <button class="danger" (click)="deleteAlert(alert.id, $event)">🗑️ Delete</button>
-              </div>
+    <!-- ── RIGHT COLUMN — Live Prices ── -->
+    <div class="right-col">
+      <div class="live-panel">
+
+        <div class="live-panel-header">
+          <h3>Live Prices</h3>
+          <span class="pulse-dot"></span>
+          <span class="refresh-hint">every 5s</span>
+        </div>
+
+        <div class="live-empty" *ngIf="livePrices.length === 0 && !coinsLoading">
+          <span>No coins available</span>
+        </div>
+
+        <div class="live-list">
+          <div class="live-row" *ngFor="let lp of livePrices">
+            <div class="live-coin">
+              <span class="live-name">{{ lp.coinName }}</span>
+              <span class="live-symbol">{{ lp.symbol }}</span>
             </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+            <div class="live-price">
+              <span *ngIf="!lp.loading">${{ lp.price | number:'1.2-2' }}</span>
+              <span *ngIf="lp.loading" class="skeleton">—</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
   </div>
 
 </div>
@@ -83,19 +165,15 @@
       <h3>Edit Alert</h3>
       <button class="close-btn" (click)="closeEdit()">✕</button>
     </div>
-
     <div class="form-section">
       <label>Coin</label>
       <select [(ngModel)]="editCoinId">
         <option *ngFor="let coin of coins" [value]="coin.id">{{ coin.coinName }}</option>
       </select>
-
       <label>Alert Price (USD)</label>
       <input type="number" [(ngModel)]="editPrice" placeholder="Enter price" step="0.01" />
     </div>
-
     <div class="error" *ngIf="editError">⚠️ {{ editError }}</div>
-
     <div class="modal-footer">
       <button class="btn-secondary" (click)="closeEdit()">Cancel</button>
       <button (click)="saveEdit()" [disabled]="editLoading || !editCoinId || !editPrice">

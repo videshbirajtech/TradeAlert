@@ -1,0 +1,132 @@
+<div class="alert-dashboard">
+  <div class="dashboard-header">
+    <h2>Price Alert Dashboard</h2>
+    <button class="refresh-btn" (click)="loadDashboard()" [disabled]="loading">
+      {{ loading ? 'Loading...' : 'Refresh' }}
+    </button>
+  </div>
+
+  <!-- Error Message -->
+  <div class="error-message" *ngIf="error">
+    {{ error }}
+    <button (click)="error = null">×</button>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading" *ngIf="loading && !dashboard">
+    Loading dashboard...
+  </div>
+
+  <!-- Dashboard Content -->
+  <div class="dashboard-content" *ngIf="dashboard && !loading">
+    
+    <!-- Alert Statistics Card -->
+    <div class="stats-card">
+      <h3>Your Subscription Status</h3>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <label>Plan:</label>
+          <span class="plan-name">{{ getPlanDisplayName(dashboard.alertStats.planType) }}</span>
+        </div>
+        <div class="stat-item">
+          <label>Status:</label>
+          <span class="status" [class.active]="dashboard.alertStats.subscriptionActive">
+            {{ dashboard.alertStats.subscriptionActive ? 'Active' : 'Inactive' }}
+          </span>
+        </div>
+        <div class="stat-item">
+          <label>Alert Usage:</label>
+          <span class="usage">{{ getAlertLimitText() }}</span>
+        </div>
+      </div>
+      
+      <!-- Progress Bar -->
+      <div class="progress-container" *ngIf="dashboard.alertStats.subscriptionActive">
+        <div class="progress-bar">
+          <div class="progress-fill" 
+               [style.width.%]="(dashboard.alertStats.totalAlertCount / dashboard.alertStats.maxAlertsAllowed) * 100">
+          </div>
+        </div>
+        <small>{{ dashboard.alertStats.remainingAlertCount }} alerts remaining</small>
+      </div>
+    </div>
+
+    <!-- Create New Alert Form -->
+    <div class="create-alert-card">
+      <h3>Create New Alert</h3>
+      <form (ngSubmit)="createAlert()" *ngIf="canCreateAlert(); else noAlertsTemplate">
+        <div class="form-group">
+          <label for="coinId">Select Coin:</label>
+          <select id="coinId" [(ngModel)]="newAlert.coinId" name="coinId" required>
+            <option value="0">Select a coin...</option>
+            <!-- You would populate this from your coins service -->
+            <option value="1">Bitcoin (BTC)</option>
+            <option value="2">Ethereum (ETH)</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="alertPrice">Alert Price:</label>
+          <input type="number" 
+                 id="alertPrice" 
+                 [(ngModel)]="newAlert.alertPrice" 
+                 name="alertPrice" 
+                 step="0.01" 
+                 min="0" 
+                 required>
+        </div>
+        
+        <button type="submit" 
+                class="create-btn" 
+                [disabled]="newAlert.coinId === 0 || newAlert.alertPrice <= 0">
+          Create Alert
+        </button>
+      </form>
+      
+      <ng-template #noAlertsTemplate>
+        <div class="no-alerts-message">
+          <p *ngIf="!dashboard.alertStats.subscriptionActive">
+            You need an active subscription to create alerts.
+          </p>
+          <p *ngIf="dashboard.alertStats.subscriptionActive && dashboard.alertStats.remainingAlertCount === 0">
+            You have reached your alert limit ({{ dashboard.alertStats.maxAlertsAllowed }} alerts).
+            Please upgrade your plan or delete some existing alerts.
+          </p>
+        </div>
+      </ng-template>
+    </div>
+
+    <!-- Alerts List -->
+    <div class="alerts-list-card">
+      <h3>Your Active Alerts ({{ dashboard.alerts.length }})</h3>
+      
+      <div class="alerts-container" *ngIf="dashboard.alerts.length > 0; else noAlertsListTemplate">
+        <div class="alert-item" *ngFor="let alert of dashboard.alerts">
+          <div class="alert-info">
+            <div class="coin-info">
+              <strong>{{ alert.coinName }} ({{ alert.symbol }})</strong>
+            </div>
+            <div class="price-info">
+              Alert Price: ${{ alert.alertPrice }}
+            </div>
+            <div class="date-info">
+              Created: {{ alert.createdAt | date:'short' }}
+            </div>
+          </div>
+          <div class="alert-actions">
+            <button class="delete-btn" (click)="deleteAlert(alert.id)">
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <ng-template #noAlertsListTemplate>
+        <div class="no-alerts">
+          <p>You don't have any active alerts yet.</p>
+          <p *ngIf="canCreateAlert()">Create your first alert above!</p>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>

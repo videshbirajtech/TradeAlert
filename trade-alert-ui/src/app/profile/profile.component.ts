@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../services/auth.service';
 import { UserService, UserProfile } from '../services/user.service';
 import { ToastService } from '../services/toast.service';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-profile',
@@ -26,6 +27,9 @@ export class ProfileComponent implements OnInit {
   photoPreview: string | null = null;
   selectedFile: File | null = null;
 
+  // Base URL without /api for serving static files
+  private serverBase = environment.apiBaseUrl.replace('/api', '');
+
   constructor(
     private authService: AuthService,
     private userService: UserService,
@@ -47,7 +51,7 @@ export class ProfileComponent implements OnInit {
         this.lastName = data.lastName;
         this.email = data.email;
         this.photoPreview = data.profilePhoto
-          ? `http://localhost:8090${data.profilePhoto}`
+          ? `${this.serverBase}${data.profilePhoto}`
           : null;
         this.loading = false;
       },
@@ -58,9 +62,19 @@ export class ProfileComponent implements OnInit {
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (!input.files?.length) return;
-    this.selectedFile = input.files[0];
 
-    // Preview
+    const file = input.files[0];
+    const allowed = ['image/jpeg', 'image/jpg', 'image/png'];
+
+    if (!allowed.includes(file.type)) {
+      this.toast.error('Only JPG and PNG files are allowed.');
+      input.value = '';
+      return;
+    }
+
+    this.selectedFile = file;
+
+    // Show preview immediately
     const reader = new FileReader();
     reader.onload = (e) => this.photoPreview = e.target?.result as string;
     reader.readAsDataURL(this.selectedFile);
@@ -75,6 +89,10 @@ export class ProfileComponent implements OnInit {
     this.userService.uploadPhoto(this.profile.email, this.selectedFile).subscribe({
       next: (data) => {
         this.profile = data;
+        // Update preview with server URL
+        this.photoPreview = data.profilePhoto
+          ? `${this.serverBase}${data.profilePhoto}`
+          : this.photoPreview;
         this.uploadingPhoto = false;
         this.toast.success('Profile photo updated!');
       },

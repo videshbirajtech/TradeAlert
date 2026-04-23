@@ -8,11 +8,11 @@ import com.vdmcreation.TradeAlert.dto.VerifySignupOtpRequestDTO;
 
 public interface LoginService {
 
-    ApiResponseDTO login(LoginRequestDTO request);
+    ApiResponseDTO<String> login(LoginRequestDTO request);
 
-    ApiResponseDTO verifyOtp(VerifyOtpRequestDTO request);
+    ApiResponseDTO<String> verifyOtp(VerifyOtpRequestDTO request);
 
-    ApiResponseDTO signup(SignupRequestDTO request);
+    ApiResponseDTO<String> signup(SignupRequestDTO request);
 
-    ApiResponseDTO verifySignupOtp(VerifySignupOtpRequestDTO request);
+    ApiResponseDTO<String> verifySignupOtp(VerifySignupOtpRequestDTO request);
 }

@@ -20,7 +20,13 @@
             <span *ngIf="uploadingPhoto" class="spinner">⏳</span>
           </div>
         </div>
-        <input #fileInput type="file" accept="image/*" hidden (change)="onFileSelected($event)" />
+        <input
+          #fileInput
+          type="file"
+          accept=".jpg,.jpeg,.png"
+          style="display:none"
+          (change)="onFileSelected($event)"
+        />
       </div>
       <p class="photo-hint">Click photo to change</p>
       <h3 class="profile-name">{{ profile.firstName }} {{ profile.lastName }}</h3>

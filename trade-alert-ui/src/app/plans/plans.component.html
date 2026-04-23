@@ -1,0 +1,94 @@
+<div class="page">
+
+  <div class="page-header">
+    <h2>Subscription Plans</h2>
+    <p>Choose a plan that works for you</p>
+  </div>
+
+  <!-- Active subscription banner -->
+  <div class="active-banner" *ngIf="activeSubscription">
+    <div class="banner-left">
+      <span class="banner-icon">✅</span>
+      <div>
+        <span class="banner-title">Active Plan: {{ activeSubscription.planType | titlecase }}</span>
+        <span class="banner-sub">{{ getDaysLeft() }} days remaining · Expires {{ activeSubscription.endDate | date:'dd MMM yyyy' }}</span>
+      </div>
+    </div>
+    <span class="banner-id">ID: {{ activeSubscription.subscriptionId | slice:0:8 }}...</span>
+  </div>
+
+  <!-- Plans grid -->
+  <div class="plans-grid">
+    <div
+      class="plan-card"
+      *ngFor="let plan of plans"
+      [class.highlighted]="plan.highlighted"
+      [class.current]="isCurrentPlan(plan.key)"
+    >
+      <div class="popular-badge" *ngIf="plan.highlighted">Most Popular</div>
+      <div class="current-badge" *ngIf="isCurrentPlan(plan.key)">Current Plan</div>
+
+      <div class="plan-header">
+        <h3>{{ plan.label }}</h3>
+        <div class="plan-price">
+          <span class="amount">${{ plan.price }}</span>
+          <span class="period">{{ plan.period }}</span>
+        </div>
+        <span class="duration">{{ plan.duration }}</span>
+      </div>
+
+      <ul class="features">
+        <li *ngFor="let f of plan.features">
+          <span class="check">✓</span> {{ f }}
+        </li>
+      </ul>
+
+      <button
+        (click)="purchase(plan.key)"
+        [disabled]="loadingPlan === plan.key || isCurrentPlan(plan.key)"
+        [class.btn-highlighted]="plan.highlighted"
+      >
+        <span *ngIf="loadingPlan !== plan.key && !isCurrentPlan(plan.key)">Get Started</span>
+        <span *ngIf="loadingPlan === plan.key">Processing...</span>
+        <span *ngIf="isCurrentPlan(plan.key)">Active</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Subscription history -->
+  <div class="section-header">
+    <h3>Subscription History</h3>
+  </div>
+
+  <div class="card table-card">
+    <div class="loading" *ngIf="historyLoading">Loading history...</div>
+    <div class="empty" *ngIf="!historyLoading && history.length === 0">No subscriptions yet.</div>
+
+    <table *ngIf="!historyLoading && history.length > 0">
+      <thead>
+        <tr>
+          <th>Subscription ID</th>
+          <th>Plan</th>
+          <th>Price</th>
+          <th>Start Date</th>
+          <th>End Date</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let s of history">
+          <td class="sub-id">{{ s.subscriptionId | slice:0:12 }}...</td>
+          <td><span class="badge">{{ s.planType }}</span></td>
+          <td class="price">${{ s.price }}</td>
+          <td class="date">{{ s.startDate | date:'dd MMM yyyy' }}</td>
+          <td class="date">{{ s.endDate | date:'dd MMM yyyy' }}</td>
+          <td>
+            <span class="status active" *ngIf="s.active">Active</span>
+            <span class="status expired" *ngIf="!s.active">Expired</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>

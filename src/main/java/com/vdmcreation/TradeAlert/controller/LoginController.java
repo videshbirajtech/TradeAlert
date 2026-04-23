@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
+@CrossOrigin(origins = "*")
 public class LoginController {
 
     private final LoginService loginService;
@@ -21,25 +22,25 @@ public class LoginController {
 
     // POST /api/auth/login
     @PostMapping("/login")
-    public ResponseEntity<ApiResponseDTO> login(@RequestBody LoginRequestDTO request) {
+    public ResponseEntity<ApiResponseDTO<String>> login(@RequestBody LoginRequestDTO request) {
         return ResponseEntity.ok(loginService.login(request));
     }
 
     // POST /api/auth/verify-otp
     @PostMapping("/verify-otp")
-    public ResponseEntity<ApiResponseDTO> verifyOtp(@RequestBody VerifyOtpRequestDTO request) {
+    public ResponseEntity<ApiResponseDTO<String>> verifyOtp(@RequestBody VerifyOtpRequestDTO request) {
         return ResponseEntity.ok(loginService.verifyOtp(request));
     }
 
     // POST /api/auth/signup
     @PostMapping("/signup")
-    public ResponseEntity<ApiResponseDTO> signup(@RequestBody SignupRequestDTO request) {
+    public ResponseEntity<ApiResponseDTO<String>> signup(@RequestBody SignupRequestDTO request) {
         return ResponseEntity.ok(loginService.signup(request));
     }
 
     // POST /api/auth/verify-signup-otp
     @PostMapping("/verify-signup-otp")
-    public ResponseEntity<ApiResponseDTO> verifySignupOtp(@RequestBody VerifySignupOtpRequestDTO request) {
+    public ResponseEntity<ApiResponseDTO<String>> verifySignupOtp(@RequestBody VerifySignupOtpRequestDTO request) {
         return ResponseEntity.ok(loginService.verifySignupOtp(request));
     }
 }

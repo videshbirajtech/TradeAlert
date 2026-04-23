@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../services/auth.service';
 import { UserService, UserProfile } from '../services/user.service';
 import { ToastComponent } from '../shared/toast/toast.component';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-layout',
@@ -20,8 +21,11 @@ export class LayoutComponent implements OnInit {
 
   menuItems = [
     { label: 'Dashboard',     icon: '📊', route: '/dashboard' },
-    { label: 'Create Alert',  icon: '🔔', route: '/create-alert' }
+    { label: 'Create Alert',  icon: '🔔', route: '/create-alert' },
+    { label: 'Plans',         icon: '💎', route: '/plans' }
   ];
+
+  private serverBase = environment.apiBaseUrl.replace('/api', '');
 
   constructor(
     private authService: AuthService,
@@ -46,7 +50,7 @@ export class LayoutComponent implements OnInit {
   }
 
   getPhotoUrl(): string | null {
-    return this.profile?.profilePhoto ? `http://localhost:8090${this.profile.profilePhoto}` : null;
+    return this.profile?.profilePhoto ? `${this.serverBase}${this.profile.profilePhoto}` : null;
   }
 
   toggleSidebar(): void {

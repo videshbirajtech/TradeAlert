@@ -34,7 +34,7 @@ public class LoginServiceImpl implements LoginService {
     }
 
     @Override
-    public ApiResponseDTO login(LoginRequestDTO request) {
+    public ApiResponseDTO<String> login(LoginRequestDTO request) {
         // Check if user exists
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ResponseStatusException(
@@ -50,11 +50,11 @@ public class LoginServiceImpl implements LoginService {
         // Send OTP via email
         emailService.sendOtpEmail(user.getEmail(), otp);
 
-        return new ApiResponseDTO(true, "OTP sent successfully to " + user.getEmail());
+        return new ApiResponseDTO<>("OTP sent successfully to " + user.getEmail(), null, true);
     }
 
     @Override
-    public ApiResponseDTO verifyOtp(VerifyOtpRequestDTO request) {
+    public ApiResponseDTO<String> verifyOtp(VerifyOtpRequestDTO request) {
         // Check if user exists
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ResponseStatusException(
@@ -67,28 +67,28 @@ public class LoginServiceImpl implements LoginService {
 
         // Check if OTP is already used
         if (latestOtp.isUsed()) {
-            return new ApiResponseDTO(false, "OTP has already been used. Please request a new OTP.");
+            return new ApiResponseDTO<>("OTP has already been used. Please request a new OTP.", null, false);
         }
 
         // Check if OTP is expired (5 minutes)
         if (latestOtp.getCreatedAt().isBefore(LocalDateTime.now().minusMinutes(5))) {
-            return new ApiResponseDTO(false, "OTP has expired. Please request a new OTP.");
+            return new ApiResponseDTO<>("OTP has expired. Please request a new OTP.", null, false);
         }
 
         // Verify OTP
         if (!latestOtp.getOtp().equals(request.getOtp())) {
-            return new ApiResponseDTO(false, "Invalid OTP. Please try again.");
+            return new ApiResponseDTO<>("Invalid OTP. Please try again.", null, false);
         }
 
         // Mark OTP as used
         latestOtp.setUsed(true);
         userOtpRepository.save(latestOtp);
 
-        return new ApiResponseDTO(true, "OTP verified successfully. Welcome, " + user.getFirstName() + "!");
+        return new ApiResponseDTO<>("OTP verified successfully. Welcome, " + user.getFirstName() + "!", null, true);
     }
 
     @Override
-    public ApiResponseDTO signup(SignupRequestDTO request) {
+    public ApiResponseDTO<String> signup(SignupRequestDTO request) {
         // Check if email already exists
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new ResponseStatusException(
@@ -107,11 +107,11 @@ public class LoginServiceImpl implements LoginService {
         // Send OTP email
         emailService.sendOtpEmail(user.getEmail(), otp);
 
-        return new ApiResponseDTO(true, "OTP sent to " + user.getEmail() + ". Please verify to complete signup.");
+        return new ApiResponseDTO<>("OTP sent to " + user.getEmail() + ". Please verify to complete signup.", null, true);
     }
 
     @Override
-    public ApiResponseDTO verifySignupOtp(VerifySignupOtpRequestDTO request) {
+    public ApiResponseDTO<String> verifySignupOtp(VerifySignupOtpRequestDTO request) {
         // Check user exists
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ResponseStatusException(
@@ -124,17 +124,17 @@ public class LoginServiceImpl implements LoginService {
 
         // Check already used
         if (latestOtp.isUsed()) {
-            return new ApiResponseDTO(false, "OTP already used. Please sign up again.");
+            return new ApiResponseDTO<>("OTP already used. Please sign up again.", null, false);
         }
 
         // Check expiry (5 minutes)
         if (latestOtp.getCreatedAt().isBefore(LocalDateTime.now().minusMinutes(5))) {
-            return new ApiResponseDTO(false, "OTP has expired. Please sign up again.");
+            return new ApiResponseDTO<>("OTP has expired. Please sign up again.", null, false);
         }
 
         // Verify OTP
         if (!latestOtp.getOtp().equals(request.getOtp())) {
-            return new ApiResponseDTO(false, "Invalid OTP. Please try again.");
+            return new ApiResponseDTO<>("Invalid OTP. Please try again.", null, false);
         }
 
         // Mark OTP used and set user as verified
@@ -144,6 +144,6 @@ public class LoginServiceImpl implements LoginService {
         user.setVerified(true);
         userRepository.save(user);
 
-        return new ApiResponseDTO(true, "Account verified! Welcome, " + user.getFirstName() + "!");
+        return new ApiResponseDTO<>("Account verified! Welcome, " + user.getFirstName() + "!", null, true);
     }
 }
